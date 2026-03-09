@@ -2,20 +2,22 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Node.js 20 + 기본 도구 설치
+# Node.js 22 + 기본 도구 설치
 RUN apt-get update && apt-get install -y \
     curl \
     git \
     ca-certificates \
     zstd \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    build-essential \
+    python3 \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # OpenClaw 설치
 ENV PATH="/root/.npm-global/bin:$PATH"
 RUN npm config set prefix '/root/.npm-global'
-RUN npm install -g openclaw
+RUN npm install -g openclaw@latest
 
 # Ollama 설치
 RUN curl -fsSL https://ollama.ai/install.sh | sh
