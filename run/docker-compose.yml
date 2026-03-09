@@ -1,0 +1,30 @@
+services:
+  openclaw:
+    image: ghcr.io/${GITHUB_USERNAME:-your-username}/openclaw-ollama-image-run:latest
+    restart: unless-stopped
+    environment:
+      # GitHub (선택 — 없으면 WARNING 출력 후 계속 진행)
+      - GITHUB_USERNAME=${GITHUB_USERNAME:-}
+      - GITHUB_EMAIL=${GITHUB_EMAIL:-}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      # Ollama 모델 (선택)
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3-coder:32b}
+      # Telegram (필수)
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      # Google OAuth (필수)
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REFRESH_TOKEN=${GOOGLE_REFRESH_TOKEN}
+    volumes:
+      # 모델 캐시 — 재시작 시 재다운로드 방지
+      - ollama-models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  ollama-models:
