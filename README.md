@@ -17,7 +17,7 @@ OpenClaw + Ollama 기반 오케스트레이션 멀티 에이전트 구조.
 | 대상 | 비개발자 | 개발자 |
 | agents/skills | 이미지 내장 | 레포 git clone |
 | GitHub 자격증명 | 선택 | 필수 |
-| 이미지 빌드 | 로컬 (`build-run.sh`) | GitHub Actions 자동 빌드 |
+| 이미지 빌드 | GitHub Actions 자동 빌드 | GitHub Actions 자동 빌드 |
 | 커스터마이징 | 이미지 재빌드 필요 | 레포 수정 후 재시작 |
 
 ---
@@ -68,24 +68,16 @@ docker compose --env-file ../.env up -d
 
 ---
 
-## build-run.sh 사용법
+## GitHub Actions 자동 빌드
 
-run 이미지는 모델 크기 문제로 GitHub Actions 빌드가 불가능합니다.
-로컬에서 `build-run.sh`로 빌드 후 ghcr.io에 푸시하세요.
+run/dev 모두 GitHub Actions로 자동 빌드됩니다.
 
-```bash
-# 사전 준비
-export GITHUB_USERNAME="your-github-id"
-export GITHUB_TOKEN="your-github-token"   # write:packages 권한 필요
+| 워크플로우 | 트리거 | 이미지 |
+|---|---|---|
+| `build-run.yml` | `run/**` 변경 또는 수동 | `ghcr.io/{owner}/openclaw-ollama-image-run` |
+| `build-dev.yml` | `dev/**` 변경 또는 수동 | `ghcr.io/{owner}/openclaw-ollama-image-dev` |
 
-# latest 태그로 빌드 + 푸시
-./build-run.sh
-
-# 버전 태그 포함
-./build-run.sh v1.0.0
-```
-
-빌드 완료 후 출력되는 `docker pull` 명령으로 다른 서버에서 바로 사용할 수 있습니다.
+이 레포를 fork하면 자신의 ghcr.io 네임스페이스에 자동으로 이미지가 빌드됩니다.
 
 ---
 
@@ -137,9 +129,9 @@ GPU 패스스루가 자동으로 설정되어 있습니다 (NVIDIA 드라이버 
 ```
 openclaw-ollama-image/
 ├── README.md
-├── build-run.sh                      # run 이미지 로컬 빌드 + ghcr.io 푸시
 ├── .github/
 │   └── workflows/
+│       ├── build-run.yml             # run 이미지 GitHub Actions 자동 빌드
 │       └── build-dev.yml             # dev 이미지 GitHub Actions 자동 빌드
 ├── run/                              # 비개발자용
 │   ├── Dockerfile
