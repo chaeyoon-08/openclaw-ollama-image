@@ -24,10 +24,23 @@ if [ -n "$GITHUB_USERNAME" ] && [ -n "$GITHUB_EMAIL" ] && [ -n "$GITHUB_TOKEN" ]
   GIT_STATUS="완료"
 fi
 
+mask_value() {
+  local val="$1"
+  local prefix="${val:0:4}"
+  local masked
+  masked=$(printf '%0.s*' $(seq 1 $((${#val} - 4))))
+  echo "${prefix}${masked}"
+}
+
 check_var() {
-  local var="$1" suffix="$2"
-  if [ -n "${!var}" ]; then
-    info "${var}: 설정됨"
+  local var="$1" suffix="$2" sensitive="${3:-false}"
+  local val="${!var}"
+  if [ -n "$val" ]; then
+    if [ "$sensitive" = "true" ]; then
+      info "${var}: $(mask_value "$val")"
+    else
+      info "${var}: ${val}"
+    fi
   else
     info "${var}${suffix} 설정되지 않았습니다. 워크로드의 환경변수를 추가해주세요."
   fi
@@ -35,12 +48,13 @@ check_var() {
 
 info "================================"
 info "git 설정: ${GIT_STATUS}"
-check_var TELEGRAM_BOT_TOKEN    "이"
-check_var GOOGLE_CLIENT_ID      "가"
-check_var GOOGLE_CLIENT_SECRET  "이"
-check_var GOOGLE_REFRESH_TOKEN  "이"
-check_var OLLAMA_MODEL          "이"
-check_var OLLAMA_FALLBACK_MODEL "이"
+check_var TELEGRAM_BOT_TOKEN    "이" true
+check_var GOOGLE_CLIENT_ID      "가" true
+check_var GOOGLE_CLIENT_SECRET  "이" true
+check_var GOOGLE_REFRESH_TOKEN  "이" true
+check_var OLLAMA_MODEL          "이" false
+check_var OLLAMA_SUBAGENT_MODEL "이" false
+check_var OLLAMA_FALLBACK_MODEL "이" false
 info "개발 환경 준비 완료"
 info "================================"
 
