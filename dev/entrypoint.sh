@@ -24,8 +24,24 @@ if [ -n "$GITHUB_USERNAME" ] && [ -n "$GITHUB_EMAIL" ] && [ -n "$GITHUB_TOKEN" ]
   GIT_STATUS="완료"
 fi
 
+check_var() {
+  local var="$1" suffix="$2"
+  if [ -n "${!var}" ]; then
+    info "${var}: 설정됨"
+  else
+    info "${var}${suffix} 설정되지 않았습니다. 워크로드의 환경변수를 추가해주세요."
+  fi
+}
+
 info "================================"
 info "git 설정: ${GIT_STATUS}"
+check_var TELEGRAM_BOT_TOKEN    "이"
+check_var GOOGLE_CLIENT_ID      "가"
+check_var GOOGLE_CLIENT_SECRET  "이"
+check_var GOOGLE_REFRESH_TOKEN  "이"
+check_var OLLAMA_MODEL          "이"
+check_var OLLAMA_FALLBACK_MODEL "이"
 info "개발 환경 준비 완료"
-info "다음 단계: git clone 후 setup.sh 실행"
 info "================================"
+
+tail -f /dev/null
