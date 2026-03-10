@@ -48,6 +48,16 @@ else
   info "클론 완료"
 fi
 
+# ── 2-1. .env 파일 생성 ─────────────────────────────────────
+cat > "$REPO_DIR/.env" << EOF
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+GOOGLE_REFRESH_TOKEN=${GOOGLE_REFRESH_TOKEN}
+OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3-coder:32b}
+EOF
+info ".env 파일 생성 완료"
+
 # ── 3. OpenClaw 워크스페이스 설정 ───────────────────────────
 section "OpenClaw 워크스페이스 설정"
 
