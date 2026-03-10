@@ -18,7 +18,7 @@ echo "  OpenClaw AI 업무 비서팀 (run)"
 echo "=================================================="
 echo ""
 
-# ── 1. GitHub 환경변수 처리 (선택) ──────────────────────────
+# ── 1. Git 설정 ──────────────────────────────────────────────
 section "Git 설정"
 
 if [ -n "$GITHUB_USERNAME" ] && [ -n "$GITHUB_EMAIL" ] && [ -n "$GITHUB_TOKEN" ]; then
@@ -29,57 +29,22 @@ if [ -n "$GITHUB_USERNAME" ] && [ -n "$GITHUB_EMAIL" ] && [ -n "$GITHUB_TOKEN" ]
   chmod 600 ~/.git-credentials
   info "Git 설정 완료"
 else
-  warn "GITHUB_USERNAME / GITHUB_EMAIL / GITHUB_TOKEN 미설정 — Git 인증 없이 진행"
+  info "GitHub 계정 정보가 입력되지 않아 git 설정을 건너뜁니다."
 fi
 
-# ── 2. OpenClaw 설정 (openclaw.json) ────────────────────────
-section "OpenClaw 설정"
+# ── 2. .env 파일 생성 ─────────────────────────────────────────
+section ".env 파일 생성"
 
-OPENCLAW_DIR="$HOME/.openclaw"
-mkdir -p "$OPENCLAW_DIR"
-
-OLLAMA_MODEL_CFG="${OLLAMA_MODEL:-qwen3-coder:32b}"
-
-cat > "$OPENCLAW_DIR/openclaw.json" << EOF
-{
-  "models": {
-    "mode": "merge",
-    "providers": {
-      "ollama": {
-        "baseUrl": "http://127.0.0.1:11434",
-        "apiKey": "ollama-local",
-        "api": "openai-completions"
-      }
-    }
-  },
-  "agents": {
-    "defaults": {
-      "model": {
-        "primary": "ollama/${OLLAMA_MODEL_CFG}",
-        "fallbacks": ["ollama/glm4:latest"]
-      }
-    }
-  },
-  "channels": {
-    "telegram": {
-      "botToken": "${TELEGRAM_BOT_TOKEN}",
-      "dmPolicy": "open",
-      "allowFrom": ["*"]
-    }
-  },
-  "env": {
-    "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
-    "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",
-    "GOOGLE_REFRESH_TOKEN": "${GOOGLE_REFRESH_TOKEN}"
-  },
-  "gateway": {
-    "mode": "local"
-  }
-}
+cat > /workspace/.env << EOF
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+GOOGLE_REFRESH_TOKEN=${GOOGLE_REFRESH_TOKEN}
+OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3-coder:32b}
 EOF
-info "openclaw.json 설정 완료"
+info ".env 파일 생성 완료"
 
-# ── 3. Ollama 서비스 시작 ────────────────────────────────────
+# ── 3. Ollama 서비스 시작 ─────────────────────────────────────
 section "Ollama 서비스 시작"
 
 ollama serve &>/dev/null &
@@ -97,7 +62,7 @@ until curl -sf http://127.0.0.1:11434/api/tags &>/dev/null; do
 done
 info "Ollama 준비 완료"
 
-# ── 3. 모델 로드 ─────────────────────────────────────────────
+# ── 4. 모델 로드 ──────────────────────────────────────────────
 section "LLM 모델 로드"
 
 OLLAMA_MODEL="${OLLAMA_MODEL:-qwen3-coder:32b}"
@@ -119,20 +84,7 @@ else
   fi
 fi
 
-# ── 5. 에이전트 등록 ─────────────────────────────────────────
-section "에이전트 등록"
-
-for AGENT in orchestrator mail-agent calendar-agent drive-agent; do
-  openclaw agents add "$AGENT" \
-    --workspace /workspace \
-    --model "ollama/${OLLAMA_MODEL}" \
-    --non-interactive \
-    2>/dev/null \
-    || info "  ${AGENT}: 이미 등록됨 (스킵)"
-done
-info "에이전트 등록 완료"
-
-# ── 6. OpenClaw 시작 ─────────────────────────────────────────
+# ── 5. OpenClaw 시작 ──────────────────────────────────────────
 section "OpenClaw 시작"
 
 echo ""
